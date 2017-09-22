@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+    # Common Resources
+    rds:
+        image: mariadb:latest
+        container_name: shiroyuki.otb.rds
+        environment:
+            MYSQL_ROOT_PASSWORD: nosecret
+        networks:
+            - storage
+        ports:
+            - 3306:3306
+        restart: on-failure
+
+networks:
+    storage: ~

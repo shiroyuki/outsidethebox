@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import pprint
+import sys
+
+import requests
+
+class API(object):
+    def __init__(self, url):
+        self.url = url
+
+    def list(self):
+        return requests.get(self.url).json()
+
+    def get(self, identifier):
+        return requests.get(self.url + identifier).json()
+
+    def search(self, **params):
+        return requests.get(self.url, params = params).json()
+
+    def post(self, data):
+        params = {}
+
+        if isinstance(data, str):
+            params['data'] = data
+        else:
+            params['json'] = data
+
+        return requests.post(self.url, **params).json()
+
+def main():
+    api = API('http://localhost:8080/tasks/')
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('operation')
+    parser.add_argument('param', nargs='*')
+
+    args = parser.parse_args()
+
+    method_name = args.operation
+
+    if not hasattr(api, method_name):
+        raise ValueError('Unknown operation: {}'.format(method_name))
+
+    if method_name == 'list':
+        pprint.pprint(api.list(), indent = 4)
+    elif method_name == 'get':
+        for identifier in args.param:
+            pprint.pprint(api.get(identifier), indent = 4)
+    elif method_name == 'post':
+        assert args.param, 'The JSON data (second argument) must be defined'
+
+        pprint.pprint(api.post(args.param[0]), indent = 4)
+    elif method_name == 'search:summary':
+        assert args.param, 'The summary (second argument) must be defined'
+
+        pprint.pprint(api.search(summary = args.param[0]), indent = 4)
+
+if __name__ == '__main__':
+    main()
